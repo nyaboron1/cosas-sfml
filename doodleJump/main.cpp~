@@ -1,0 +1,120 @@
+#include <SFML/Graphics.hpp>
+
+#include <time.h>
+
+using namespace sf;
+
+
+struct Point
+{
+  int x [20];
+  int y [20];
+};
+
+
+int main()
+{
+  srand(time(0));
+  
+  RenderWindow app (VideoMode(400,533), "Doodle Game");
+  app.setFramerateLimit (75);
+
+  Texture t1;
+  Texture t2;
+  Texture t3;
+  t1.loadFromFile ("images/background.png");
+  t2.loadFromFile ("images/platform.png");
+  t3.loadFromFile ("images/doodle.png");
+
+  Sprite sBackground (t1);
+  Sprite sPlat (t2);
+  Sprite sPers (t3);
+
+
+  Point plat;
+
+  // incializar posicion de las plataformas
+  for (int i = 0; i < 10; ++i)
+    {
+      plat.x[i] = rand() % 400;
+      plat.y[i] = rand() % 533;
+    }
+
+  
+  int x = 100;
+  int y = 100;
+  int h = 200;
+
+  float dx = 0;
+  float dy = 0;
+  
+  while (app.isOpen())
+    {
+      
+      Event e;
+      while (app.pollEvent(e))
+	{
+	  if (e.type == Event::Closed)
+	    {
+	      app.close();
+	    }
+	}
+
+      
+      if (Keyboard::isKeyPressed (Keyboard::Right))
+	{
+	  x += 3;
+	}
+      else if (Keyboard::isKeyPressed (Keyboard::Left))
+	{
+	  x -= 3;
+	}
+
+      
+      dy += 0.2f;
+      y += dy;
+      if (y > 500)
+	{
+	  dy -= 10;
+	}
+
+      if (y < h)
+	{
+	  for (int i = 0; i < 10; ++i)
+	    {
+	      y = h;
+	      plat.y[i] = plat.y[i] - dy;
+
+	      if (plat.y[i] > 533)
+		{
+		  plat.y[i] = 0;
+		  plat.x[i] = rand () % 400;
+		}
+	    }
+	}
+
+      // comprobar si está encima de alguna plataforma
+      for (int i = 0; i < 10; ++i)
+	{
+	  if ( (x + 50 > plat.x[i]) && (x + 20 < plat.x[i] + 68)
+	       && (y + 70 > plat.y[i]) && (y + 70 < plat.y[i] + 14) && (dy > 0))
+	    {
+	      dy -= 10;
+	    }
+	}
+
+      // dibujar personaje y fondo
+      sPers.setPosition (x, y);
+      app.draw (sBackground);
+      app.draw (sPers);
+      
+      // dibujar plataformas
+      for (int i = 0; i < 10; ++i)
+	{
+	  sPlat.setPosition (plat.x[i], plat.y[i]);
+	  app.draw (sPlat);
+	}
+
+      app.display();
+    }
+}
